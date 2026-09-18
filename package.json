@@ -1,0 +1,17 @@
+{
+  "name": "cyriform-companion",
+  "version": "1.0.1",
+  "description": "Apply note states, widths and accents, and insert callouts, highlights, task states and image layouts for Cyriform.",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node tests/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cyriusweng/cyriform-companion.git"
+  }
+}

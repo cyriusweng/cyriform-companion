@@ -1,0 +1,10 @@
+{
+  "id": "cyriform-companion",
+  "name": "Cyriform Companion",
+  "version": "1.0.1",
+  "minAppVersion": "1.13.0",
+  "description": "Apply note states, widths and accents, and insert callouts, highlights, task states and image layouts for Cyriform.",
+  "author": "Cyrius",
+  "isDesktopOnly": false,
+  "authorUrl": "https://github.com/cyriusweng"
+}

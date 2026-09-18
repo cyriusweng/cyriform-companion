@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.dirname(fileURLToPath(import.meta.url));
+const logic = fs.readFileSync(path.join(root, 'src/logic.js'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'src/companion.js'), 'utf8');
+const bundle = source.replace("const Logic = require('./logic');", `const Logic = (() => { const module = {exports:{}};\n${logic}\nreturn module.exports; })();`);
+if (bundle === source) throw new Error('Expected source import for the logic module.');
+fs.writeFileSync(path.join(root, 'main.js'), bundle);
+console.log('Built Cyriform Companion.');
