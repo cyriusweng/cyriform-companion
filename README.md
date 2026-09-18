@@ -27,7 +27,7 @@ Image actions handle single-line inline Markdown images and wikilink embeds. The
 
 ## Installation
 
-The community-directory submission is in progress. For manual installation, download `main.js`, `manifest.json` and `styles.css` from the latest GitHub Release into `.obsidian/plugins/cyriform-companion` within your chosen vault. Review and enable **Cyriform Companion** through **Settings → Community plugins**. The minimum application version is Obsidian 1.13.0.
+Install from the [official Obsidian Community Directory](https://community.obsidian.md/plugins/cyriform-companion) by choosing **Add to Obsidian**. For manual installation, download `main.js`, `manifest.json` and `styles.css` from the latest GitHub Release into `.obsidian/plugins/cyriform-companion` within your chosen vault. Review and enable **Cyriform Companion** through **Settings → Community plugins**. The minimum application version is Obsidian 1.13.0.
 
 Install the Cyriform theme to display the associated page classes, extended task styling and image layouts. The plugin uses Obsidian’s editor and vault APIs for its text and property actions. Style Settings is an optional, separate plugin for the theme’s typography and colour controls.
 
