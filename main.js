@@ -146,9 +146,60 @@ const ACTIONS = [
   { id: 'image', label: 'Set image layout', icon: 'image', detail: 'Style the image at the captured cursor position' },
 ];
 const titleCase = value => LABELS[value] || value.charAt(0).toUpperCase() + value.slice(1);
+const PREVIEW_IMAGE = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 160 96"><rect width="160" height="96" fill="#FBF8F1"/><path d="M18 72H142M18 24V72M34 60L66 36L94 50L132 20" fill="none" stroke="#365ED8" stroke-width="3"/><circle cx="94" cy="50" r="5" fill="#A78555"/></svg>');
+function renderPreview(choice, el, context, baseClasses) {
+  const preview = el.createDiv({ cls: 'cyriform-effect-preview' });
+  preview.dataset.kind = choice.kind;
+  preview.setAttribute('aria-hidden', 'true');
+  preview.inert = true;
+  const frontmatter = { cssclasses: baseClasses.slice() };
+  if (Logic.GROUPS[choice.kind]) Logic.updateClasses(frontmatter, choice.kind, choice.value);
+  const page = preview.createDiv({ cls: 'markdown-preview-view markdown-rendered cyriform-effect-content' });
+  for (const token of frontmatter.cssclasses || []) page.classList.add(token);
+  const sample = Array.from(context?.selection || 'Keep the detail that matters.').slice(0, 100).join('');
+  if (Logic.GROUPS[choice.kind]) {
+    page.addClass('cyriform-effect-page', 'is-readable-line-width');
+    if (choice.kind !== 'width') page.addClass('cyriform-effect-readable');
+    const content = page.createDiv({ cls: 'markdown-preview-sizer' }).createDiv({ cls: 'markdown-preview-section' });
+    content.createDiv({ cls: 'inline-title', text: context?.file?.basename || 'Field notes' });
+    content.createEl('p', { text: choice.kind === 'width' ? 'A clear observation gives the next thought a place to begin. Keep its context and follow the question.' : 'A clear observation, in its original context.' });
+    if (choice.kind === 'width') content.createEl('p', { text: 'The page keeps its structure as the emphasis changes.' });
+    content.createEl('a', { cls: 'internal-link', text: 'Follow the reference' });
+  } else if (choice.kind === 'callout') {
+    const callout = page.createDiv({ cls: 'callout', attr: { 'data-callout': choice.value } });
+    const title = callout.createDiv({ cls: 'callout-title' });
+    const icon = title.createDiv({ cls: 'callout-icon' });
+    const iconName = el.ownerDocument.defaultView.getComputedStyle(callout).getPropertyValue('--callout-icon').trim().replace(/^['"]|['"]$/g, '');
+    setIcon(icon, iconName || 'message-square');
+    title.createDiv({ cls: 'callout-title-inner', text: choice.label });
+    callout.createDiv({ cls: 'callout-content' }).createEl('p', { text: sample });
+  } else if (choice.kind === 'highlight') {
+    const paragraph = page.createEl('p');
+    paragraph.appendText('A thought worth keeping: ');
+    paragraph.createEl('mark', { cls: 'cyriform-mark-' + choice.value, text: sample });
+  } else if (choice.kind === 'task') {
+    const item = page.createEl('ul', { cls: 'contains-task-list' }).createEl('li', { cls: 'task-list-item', attr: { 'data-task': choice.value } });
+    if (choice.value !== ' ') item.addClass('is-checked');
+    const checkbox = item.createEl('input', { cls: 'task-list-item-checkbox', type: 'checkbox' });
+    checkbox.checked = choice.value !== ' ';
+    checkbox.tabIndex = -1;
+    item.createSpan({ cls: 'task-list-item-content', text: choice.label + ' · Review the reference' });
+  } else if (choice.kind === 'image') {
+    page.addClass('cyriform-effect-page', 'is-readable-line-width');
+    const paragraph = page.createDiv({ cls: 'markdown-preview-sizer' }).createEl('p');
+    const alt = 'Sample diagram' + (choice.value ? ' cyriform-' + choice.value : '');
+    for (let n = 0; n < (choice.value === 'grid' ? 2 : 1); n++) {
+      const embed = paragraph.createSpan({ cls: 'image-embed', attr: { alt } });
+      embed.createEl('img', { attr: { alt, src: PREVIEW_IMAGE } });
+    }
+    if (choice.value !== 'grid') paragraph.appendText('An observation and its context remain together on the page.');
+  }
+}
 class CyriformPicker extends SuggestModal {
-  constructor(plugin, title, choices, choose) {
-    super(plugin.app); this.plugin = plugin; this.choices = choices; this.choose = choose;
+  constructor(plugin, title, choices, choose, context) {
+    super(plugin.app); this.plugin = plugin; this.choices = choices; this.choose = choose; this.context = context;
+    const classes = context && plugin.app.metadataCache?.getFileCache(context.file)?.frontmatter?.cssclasses;
+    this.previewClasses = (Array.isArray(classes) ? classes : [classes]).filter(value => typeof value === 'string').flatMap(value => value.split(/\s+/).filter(Boolean));
     this.setPlaceholder(title); this.setInstructions([{ command: '↑ ↓', purpose: 'Choose' }, { command: 'Enter', purpose: 'Apply' }, { command: 'Esc', purpose: 'Close' }]);
   }
   onOpen() { super.onOpen(); this.modalEl.addClass('cyriform-picker'); this.inputEl.setAttribute('aria-label', this.inputEl.placeholder); this.plugin.pickers.add(this); }
@@ -159,7 +210,7 @@ class CyriformPicker extends SuggestModal {
     const icon = el.createSpan({ cls: 'cyriform-choice-icon' }); setIcon(icon, choice.icon || 'minus');
     const words = el.createDiv({ cls: 'cyriform-choice-words' }); words.createDiv({ text: choice.label, cls: 'cyriform-choice-title' });
     if (choice.detail) words.createDiv({ text: choice.detail, cls: 'cyriform-choice-detail' });
-    if (choice.preview) { const preview = el.createSpan({ cls: 'cyriform-choice-preview ' + choice.preview, text: choice.sample || 'Aa' }); preview.setAttribute('aria-hidden', 'true'); }
+    if (choice.kind) renderPreview(choice, el, this.context, this.previewClasses);
   }
   async onChooseSuggestion(choice) {
     if (this.plugin.disposed) return;
@@ -206,7 +257,7 @@ module.exports = class CyriformCompanion extends Plugin {
     if (editing && context.multiple) throw new Error('Use one selection for this action.');
     return context;
   }
-  picker(title, choices, choose) { new CyriformPicker(this, title, choices, choose).open(); }
+  picker(title, choices, choose, context) { new CyriformPicker(this, title, choices, choose, context).open(); }
   openTools(context) {
     if (!context) { new Notice('Open a Markdown note to use Cyriform tools.'); return; }
     this.picker('Cyriform · choose a tool', ACTIONS, choice => this.openAction(choice.id, context));
@@ -215,18 +266,18 @@ module.exports = class CyriformCompanion extends Plugin {
     if (!context) { new Notice('Open a Markdown note to use Cyriform tools.'); return; }
     const group = Logic.GROUPS[action];
     if (group) {
-      const choices = [{ value: '', label: 'Theme default', detail: 'Clear this Cyriform category', icon: 'rotate-ccw' }, ...group.map(value => ({ value, label: titleCase(value), icon: action === 'accent' ? 'palette' : 'file-pen-line', preview: action === 'accent' ? 'cyriform-preview-' + value : '' }))];
+      const choices = [{ value: '', kind: action, label: 'Theme default', detail: 'Clear this Cyriform category', icon: 'rotate-ccw' }, ...group.map(value => ({ value, kind: action, label: titleCase(value), icon: action === 'accent' ? 'palette' : 'file-pen-line' }))];
       this.picker('Cyriform · ' + ACTIONS.find(item => item.id === action).label.toLowerCase(), choices, async choice => {
         this.check(context);
         await this.app.fileManager.processFrontMatter(context.file, frontmatter => Logic.updateClasses(frontmatter, action, choice.value));
         new Notice('Cyriform · ' + choice.label + ' applied to ' + context.file.basename + '.');
-      });
+      }, context);
       return;
     }
     const values = { callout: Logic.CALLOUTS, highlight: Logic.MARKS, task: Logic.TASKS, image: ['', ...Logic.IMAGE_LAYOUTS] }[action];
     if (!values) return;
-    const choices = values.map(value => ({ value, label: value === '' ? 'Standard image' : titleCase(value), icon: { callout: 'message-square', highlight: 'highlighter', task: 'square-check', image: 'image' }[action], preview: 'cyriform-preview-' + action + '-' + (value || 'default'), sample: action === 'task' ? `[${value}]` : 'Aa' }));
-    this.picker('Cyriform · ' + ACTIONS.find(item => item.id === action).label.toLowerCase(), choices, choice => this.applyEditor(action, choice.value, context));
+    const choices = values.map(value => ({ value, kind: action, label: value === '' ? 'Standard image' : titleCase(value), icon: { callout: 'message-square', highlight: 'highlighter', task: 'square-check', image: 'image' }[action] }));
+    this.picker('Cyriform · ' + ACTIONS.find(item => item.id === action).label.toLowerCase(), choices, choice => this.applyEditor(action, choice.value, context), context);
   }
   applyEditor(action, value, context) {
     const { editor, from, to, cursor, selection } = this.check(context, true);

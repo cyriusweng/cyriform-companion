@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 .cyriform-picker {
-  --cf-accent: var(--text-accent);
-  max-width: 620px;
+  max-width: min(720px, calc(100vw - 32px));
 }
 
 .cyriform-choice {
@@ -62,91 +61,83 @@ SOFTWARE.
   margin-top: 3px;
 }
 
-.cyriform-choice-preview {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 54px;
-  min-height: 34px;
+.cyriform-effect-preview {
+  flex: 0 0 220px;
+  width: 220px;
+  max-width: 100%;
+  padding: 10px;
   border: 1px solid var(--background-modifier-border);
   border-radius: 3px;
-  font-family: var(--font-text);
+  background: var(--background-primary);
   color: var(--text-normal);
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: var(--line-height-normal);
+  pointer-events: none;
 }
 
-.cyriform-preview-accent-cobalt,
-.cyriform-preview-highlight-cobalt {
-  color: var(--cf-accent, var(--text-accent));
-  border-bottom: 2px solid currentColor;
+.cyriform-effect-content {
+  padding: 0;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  font-size: inherit;
 }
 
-.cyriform-preview-accent-gold,
-.cyriform-preview-highlight-gold {
-  color: var(--cf-gold, var(--text-warning));
-  border-bottom: 2px solid currentColor;
+.cyriform-effect-content> :is(p, ul),
+.cyriform-effect-content .callout,
+.cyriform-effect-content .callout-content>p {
+  margin-block: 0;
 }
 
-.cyriform-preview-accent-oxblood,
-.cyriform-preview-highlight-oxblood {
-  color: var(--cf-oxblood, var(--text-error));
-  border-bottom: 2px solid currentColor;
+.cyriform-effect-content>p {
+  display: flow-root;
 }
 
-.cyriform-preview-accent-mineral,
-.cyriform-preview-highlight-mineral {
-  color: var(--cf-success, var(--text-success));
-  border-bottom: 2px solid currentColor;
+.cyriform-effect-content .task-list-item {
+  padding-inline-start: 0;
+  margin-inline-start: 0;
 }
 
-.cyriform-preview-accent-bone,
-.cyriform-preview-highlight-bone {
-  color: var(--text-muted);
-  border-bottom: 2px solid currentColor;
+.cyriform-effect-preview:has(.cyriform-effect-page) {
+  padding: 1px;
 }
 
-[class*="cyriform-preview-callout-"] {
-  border-width: 1px 0 0;
-  background: var(--background-secondary);
-  color: var(--text-accent);
+.cyriform-effect-page {
+  width: 1080px;
+  min-height: 440px;
+  padding: 36px;
+  zoom: .2;
+  font-size: var(--font-text-size);
 }
 
-.cyriform-preview-callout-warning,
-.cyriform-preview-callout-important,
-.cyriform-preview-callout-question {
-  color: var(--text-warning);
+.cyriform-effect-page .markdown-preview-sizer {
+  width: 100%;
+  max-width: var(--file-line-width);
+  min-height: 0;
+  margin-inline: auto;
+  padding: 0;
 }
 
-.cyriform-preview-callout-danger,
-.cyriform-preview-callout-failure,
-.cyriform-preview-callout-bug {
-  color: var(--text-error);
+.cyriform-effect-readable {
+  --font-text-size: 14px;
+  width: 216px;
+  min-height: 0;
+  padding: 12px;
+  zoom: 1;
+  font-size: var(--font-text-size);
 }
 
-.cyriform-preview-callout-success {
-  color: var(--text-success);
-}
+@media (max-width: 600px) {
+  .cyriform-choice:has(.cyriform-effect-preview) {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
 
-.cyriform-preview-image-banner {
-  min-width: 70px;
-  min-height: 24px;
-  background: var(--background-secondary);
-}
-
-.cyriform-preview-image-grid {
-  background: linear-gradient(90deg, var(--background-secondary) 45%, transparent 45% 55%, var(--background-secondary) 55%);
-}
-
-.cyriform-preview-image-left {
-  border-left: 10px solid var(--text-muted);
-}
-
-.cyriform-preview-image-right {
-  border-right: 10px solid var(--text-muted);
-}
-
-.cyriform-preview-image-invert {
-  background: var(--text-normal);
-  color: var(--background-primary);
+  .cyriform-effect-preview {
+    grid-column: 1 / -1;
+    margin-inline: auto;
+  }
 }
 
 .cyriform-toolbar {

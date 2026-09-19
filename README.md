@@ -6,6 +6,8 @@ Apply note states, widths and accents, and insert callouts, highlights, task sta
 
 Open a Markdown note, then choose **Cyriform Companion: Open note tools** from the command palette or select the feather ribbon shortcut. Each of the eight actions also has its own command. Arrow keys choose an item, Enter applies it and Escape closes the picker. The plugin’s settings control the ribbon shortcut, editor context-menu entry and optional editor toolbar. The toolbar starts disabled; the ribbon and context-menu entry start enabled.
 
+Every choice includes an effect preview rendered with the active theme. Page previews retain the note’s existing classes while showing the candidate state, type, width or accent. Content previews show the callout, highlight, task or image treatment. Browsing previews leaves the note unchanged; selecting a choice applies its existing action. The picker supports desktop and mobile-width layouts in light and dark modes.
+
 Page tools change one category in the note’s `cssclasses` property: state, note type, width or accent. **Theme default** clears the selected category. Other categories, unrelated classes and other frontmatter properties remain intact. Obsidian’s frontmatter API may reserialise YAML formatting.
 
 Content tools wrap selected lines in a callout, highlight one selected paragraph, change the task state on the cursor line, or apply an image layout token. A picker captures the note, editor, cursor and selection when opened. Editing actions verify that the captured document is still current before writing. Reopen the picker after changing that document. One selection is supported for each content action, and native editor undo applies to those edits.
